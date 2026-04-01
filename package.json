@@ -1,0 +1,31 @@
+{
+  "name": "rabbitmq-jira-ai-automation",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "tsc --noEmit",
+    "bootstrap-customers": "npx tsx scripts/bootstrap-customers.ts",
+    "ingest-files": "npx tsx scripts/ingest-files.ts",
+    "ingest-fireflies": "npx tsx scripts/ingest-fireflies.ts",
+    "ingest-jira-history": "npx tsx scripts/ingest-jira-history.ts",
+    "ingest-gdrive": "npx tsx scripts/ingest-gdrive.ts",
+    "ingest-rmq-docs": "npx tsx scripts/ingest-rmq-docs.ts",
+    "test-retrieval": "npx tsx scripts/test-retrieval.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@supabase/supabase-js": "^2.47.0",
+    "cheerio": "^1.0.0",
+    "mammoth": "^1.8.0",
+    "openai": "^4.77.0",
+    "pdf-parse": "^1.1.1",
+    "turndown": "^7.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/turndown": "^5.0.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

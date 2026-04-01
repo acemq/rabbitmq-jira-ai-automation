@@ -1,0 +1,29 @@
+{
+  "customers": [
+    {
+      "jira_organization_id": "10001",
+      "jira_organization_name": "Acme Corp (Jira org name)",
+      "display_name": "Acme Corp",
+      "rabbitmq_version": "3.12.4",
+      "erlang_version": "26.1",
+      "cluster_size": 3,
+      "deployment_type": "kubernetes",
+      "os_info": "Ubuntu 22.04",
+      "cloud_provider": "aws",
+      "use_case_summary": "Processes order events for e-commerce platform. High throughput, ~50k msgs/day.",
+      "environment_notes": "Uses quorum queues, Shovel plugin enabled. Known issue: memory spike during peak hours.",
+      "fireflies_contact_email": "john.doe@acme.com",
+      "gdrive_folder_id": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs",
+      "sla_tier": "premium"
+    },
+    {
+      "jira_organization_id": "10002",
+      "jira_organization_name": "Beta Industries",
+      "display_name": "Beta Industries",
+      "rabbitmq_version": "3.11.18",
+      "cluster_size": 1,
+      "deployment_type": "on-premise",
+      "sla_tier": "standard"
+    }
+  ]
+}

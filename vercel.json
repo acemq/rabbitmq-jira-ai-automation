@@ -1,0 +1,28 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/process-tickets",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/ingest-fireflies",
+      "schedule": "0 0 * * 0"
+    },
+    {
+      "path": "/api/cron/ingest-jira-history",
+      "schedule": "0 1 * * 0"
+    },
+    {
+      "path": "/api/cron/ingest-gdrive",
+      "schedule": "0 2 * * 0"
+    },
+    {
+      "path": "/api/cron/ingest-rmq-docs",
+      "schedule": "0 3 * * 3"
+    },
+    {
+      "path": "/api/cron/reconcile-tickets",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

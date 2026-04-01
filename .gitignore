@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env.local
+.env*.local
+.vercel/
+*.log
+.DS_Store
+knowledge-base/customer-manifest.json
