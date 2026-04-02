@@ -1,5 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { supabase, type Customer, type TicketJob } from '../../lib/supabase.js';
+
+export const maxDuration = 60; // seconds — pipeline needs embed + Claude + Jira calls
 import { retrieveRelevantChunks } from '../../lib/knowledge-base.js';
 import { generateResponse } from '../../lib/claude-client.js';
 import { parseClassification, parseResponseText } from '../../lib/classifier.js';
