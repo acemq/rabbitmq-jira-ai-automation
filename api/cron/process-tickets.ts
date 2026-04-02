@@ -194,15 +194,16 @@ async function processJob(job: TicketJob): Promise<void> {
   await sendSuccessAlert(`Response posted for ${job.jira_issue_key}`, {
     issueKey: job.jira_issue_key,
     summary: job.summary,
+    customer: customer ? customer.display_name : 'unknown',
     mode: classification.mode,
     confidence: classification.confidence,
-    reason: classification.reason,
+    classificationReason: classification.reason,
     kbChunksUsed: chunks.length,
-    customerContext: customer ? customer.display_name : 'unknown',
     promptTokens,
     completionTokens,
     latencyMs,
     jiraCommentId: commentId,
+    '---RESPONSE TEXT---': responseText,
   });
 }
 
@@ -221,9 +222,12 @@ async function handleJobFailure(job: TicketJob, errorMessage: string): Promise<v
       .eq('id', job.id);
 
     await sendAlert(`Ticket job permanently failed after ${MAX_RETRY} retries`, {
-      jobId: job.id,
       issueKey: job.jira_issue_key,
-      error: errorMessage,
+      summary: job.summary,
+      customer: job.customer_id ?? 'unknown',
+      jobId: job.id,
+      retries: newRetryCount,
+      '---ERROR---': errorMessage,
     });
   } else {
     // Schedule retry with backoff
