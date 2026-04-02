@@ -3,9 +3,10 @@
   "configurations": [
     {
       "name": "Vercel Dev",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["vercel", "dev"],
-      "port": 3000
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": ["/usr/local/bin/vercel", "dev", "--yes"],
+      "port": 3000,
+      "autoPort": true
     }
   ]
 }

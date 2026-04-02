@@ -113,20 +113,32 @@ export async function addLabel(issueKey: string, label: string): Promise<void> {
 export async function getResolvedTickets(
   projectKey: string,
   daysBack = 365,
-  startAt = 0,
+  nextPageToken?: string,
   maxResults = 50
 ): Promise<{
   issues: Array<Record<string, unknown>>;
-  total: number;
-  startAt: number;
-  maxResults: number;
+  nextPageToken?: string;
+  isLast: boolean;
 }> {
-  const jql = encodeURIComponent(
-    `project = ${projectKey} AND status = Done AND resolved >= -${daysBack}d ORDER BY resolved DESC`
-  );
-  return jiraFetch(
-    `/search?jql=${jql}&startAt=${startAt}&maxResults=${maxResults}&fields=summary,description,comment,resolution,assignee,reporter,organization,created,resolved,labels`
-  );
+  const jql = `project = ${projectKey} AND statusCategory = Done AND updated >= -${daysBack}d ORDER BY updated DESC`;
+  const body: Record<string, unknown> = {
+    jql,
+    maxResults,
+    fields: ['summary', 'description', 'comment', 'resolution', 'assignee', 'reporter', 'created', 'resolved', 'labels', process.env.JIRA_ORG_FIELD_ID ?? 'customfield_10002'],
+  };
+  if (nextPageToken) body.nextPageToken = nextPageToken;
+
+  const result = await jiraFetch<{
+    issues: Array<Record<string, unknown>>;
+    nextPageToken?: string;
+    isLast?: boolean;
+  }>(`/search/jql`, { method: 'POST', body: JSON.stringify(body) });
+
+  return {
+    issues: result.issues ?? [],
+    nextPageToken: result.nextPageToken,
+    isLast: result.isLast ?? !result.nextPageToken,
+  };
 }
 
 /**

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "echo 'API-only project — no dev server needed'",
     "build": "tsc --noEmit",
     "bootstrap-customers": "npx tsx scripts/bootstrap-customers.ts",
     "ingest-files": "npx tsx scripts/ingest-files.ts",

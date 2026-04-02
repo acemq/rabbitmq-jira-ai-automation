@@ -102,12 +102,12 @@ export async function ingestJiraHistory(): Promise<{
   const orgFieldId = getOrgFieldId();
 
   try {
-    let startAt = 0;
     const maxResults = 50;
+    let nextPageToken: string | undefined = undefined;
     let hasMore = true;
 
     while (hasMore) {
-      const { issues, total } = await getResolvedTickets(PROJECT_KEY, 365, startAt, maxResults);
+      const { issues, nextPageToken: newToken, isLast } = await getResolvedTickets(PROJECT_KEY, 365, nextPageToken, maxResults);
 
       for (const rawIssue of issues) {
         const issue = rawIssue as unknown as JiraIssue;
@@ -155,9 +155,9 @@ export async function ingestJiraHistory(): Promise<{
         }
       }
 
-      startAt += issues.length;
-      hasMore = startAt < total && issues.length === maxResults;
-      console.log(`[ingest-jira-history] Progress: ${startAt}/${total}`);
+      nextPageToken = newToken;
+      hasMore = !isLast && !!newToken;
+      console.log(`[ingest-jira-history] Page done — processed so far: ${processed + skipped + failed}`);
     }
   } finally {
     await supabase
