@@ -110,7 +110,7 @@ export async function ingestJiraHistory(): Promise<{
       const { issues, total } = await getResolvedTickets(PROJECT_KEY, 365, startAt, maxResults);
 
       for (const rawIssue of issues) {
-        const issue = rawIssue as JiraIssue;
+        const issue = rawIssue as unknown as JiraIssue;
         try {
           const fields = issue.fields;
           const orgField = fields[orgFieldId] as Array<Record<string, unknown>> | null;
@@ -150,7 +150,7 @@ export async function ingestJiraHistory(): Promise<{
           chunksCreated += chunks.length;
           processed++;
         } catch (e) {
-          console.error(`[ingest-jira-history] Failed issue ${(rawIssue as JiraIssue).key}:`, e);
+          console.error(`[ingest-jira-history] Failed issue ${(rawIssue as unknown as JiraIssue).key}:`, e);
           failed++;
         }
       }
