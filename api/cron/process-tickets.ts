@@ -46,7 +46,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ message: 'Processed', issueKey: ticketJob.jira_issue_key });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error(`[process-tickets] Job ${ticketJob.id} failed:`, message);
+    const errName = err instanceof Error ? err.constructor.name : 'Unknown';
+    console.error(`[process-tickets] Job ${ticketJob.id} failed [${errName}]:`, message);
+    if (err instanceof Error && err.stack) console.error('[process-tickets] Stack:', err.stack.split('\n').slice(0, 5).join(' | '));
     await handleJobFailure(ticketJob, message);
     return res.status(200).json({ message: 'Job failed, retry scheduled' });
   }
@@ -103,10 +105,12 @@ async function processJob(job: TicketJob): Promise<void> {
     .join('\n\n');
 
   // Retrieve relevant KB chunks
+  console.log(`[process-tickets] Embedding ticket text for ${job.jira_issue_key}...`);
   const chunks = await retrieveRelevantChunks(ticketText, job.customer_id);
   console.log(`[process-tickets] Retrieved ${chunks.length} KB chunks for ${job.jira_issue_key}`);
 
   // Collision detection — skip if Tyler already commented
+  console.log(`[process-tickets] Fetching Jira comments for ${job.jira_issue_key}...`);
   const comments = await getComments(job.jira_issue_key);
   const alreadyResponded = comments.some(
     (c) => c.author?.emailAddress === JIRA_USER_EMAIL
@@ -121,6 +125,7 @@ async function processJob(job: TicketJob): Promise<void> {
   }
 
   // Generate response via Claude
+  console.log(`[process-tickets] Calling Claude for ${job.jira_issue_key}...`);
   const { rawOutput, promptTokens, completionTokens, latencyMs } =
     await generateResponse(
       {
