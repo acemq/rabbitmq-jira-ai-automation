@@ -30,7 +30,7 @@ async function sendEmailAlert(message: string, details?: Record<string, unknown>
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'AceMQ Alerts <onboarding@resend.dev>',
+        from: 'RabbitMQ Jira Response Failure Alert <alert@alerts.acemq.com>',
         to,
         subject: `[AceMQ] Support AI Alert: ${message.slice(0, 80)}`,
         text: body,
