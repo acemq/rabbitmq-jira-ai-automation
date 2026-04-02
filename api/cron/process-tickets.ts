@@ -45,10 +45,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await processJob(ticketJob);
     return res.status(200).json({ message: 'Processed', issueKey: ticketJob.jira_issue_key });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
     const errName = err instanceof Error ? err.constructor.name : 'Unknown';
-    console.error(`[process-tickets] Job ${ticketJob.id} failed [${errName}]:`, message);
-    if (err instanceof Error && err.stack) console.error('[process-tickets] Stack:', err.stack.split('\n').slice(0, 5).join(' | '));
+    const cause = (err as { cause?: unknown })?.cause;
+    const message = [
+      `${errName}: ${err instanceof Error ? err.message : String(err)}`,
+      cause ? `Cause: ${String(cause)}` : null,
+      err instanceof Error && err.stack ? `Stack: ${err.stack.split('\n').slice(0, 3).join(' | ')}` : null,
+    ].filter(Boolean).join(' || ');
+    console.error(`[process-tickets] Job ${ticketJob.id} failed:`, message);
     await handleJobFailure(ticketJob, message);
     return res.status(200).json({ message: 'Job failed, retry scheduled' });
   }
