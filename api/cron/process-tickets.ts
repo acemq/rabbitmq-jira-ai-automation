@@ -4,7 +4,7 @@ import { retrieveRelevantChunks } from '../../lib/knowledge-base.js';
 import { generateResponse } from '../../lib/claude-client.js';
 import { parseClassification, parseResponseText } from '../../lib/classifier.js';
 import { getComments, postComment, addLabel } from '../../lib/jira-client.js';
-import { sendAlert } from '../../lib/alerting.js';
+import { sendAlert, sendSuccessAlert } from '../../lib/alerting.js';
 
 const MAX_RETRY = parseInt(process.env.MAX_RETRY_COUNT ?? '3', 10);
 const RETRY_BACKOFF = parseInt(process.env.RETRY_BACKOFF_MINUTES ?? '5', 10);
@@ -178,6 +178,21 @@ async function processJob(job: TicketJob): Promise<void> {
   });
 
   console.log(`[process-tickets] Completed ${job.jira_issue_key} — comment ${commentId}`);
+
+  // Success alert
+  await sendSuccessAlert(`Response posted for ${job.jira_issue_key}`, {
+    issueKey: job.jira_issue_key,
+    summary: job.summary,
+    mode: classification.mode,
+    confidence: classification.confidence,
+    reason: classification.reason,
+    kbChunksUsed: chunks.length,
+    customerContext: customer ? customer.display_name : 'unknown',
+    promptTokens,
+    completionTokens,
+    latencyMs,
+    jiraCommentId: commentId,
+  });
 }
 
 async function handleJobFailure(job: TicketJob, errorMessage: string): Promise<void> {

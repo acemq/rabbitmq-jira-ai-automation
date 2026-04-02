@@ -1,15 +1,26 @@
 /**
- * Sends an alert via email (Resend) and optionally Slack.
+ * Sends a failure alert via email (Resend) and optionally Slack.
  * Called when a ticket job fails permanently after max retries.
  */
 export async function sendAlert(message: string, details?: Record<string, unknown>): Promise<void> {
   await Promise.allSettled([
-    sendEmailAlert(message, details),
+    sendEmailAlert('failure', message, details),
     sendSlackAlert(message, details),
   ]);
 }
 
-async function sendEmailAlert(message: string, details?: Record<string, unknown>): Promise<void> {
+/**
+ * Sends a success alert after a ticket response is posted.
+ */
+export async function sendSuccessAlert(message: string, details?: Record<string, unknown>): Promise<void> {
+  await sendEmailAlert('success', message, details);
+}
+
+async function sendEmailAlert(
+  type: 'success' | 'failure',
+  message: string,
+  details?: Record<string, unknown>
+): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.ALERT_EMAIL ?? 'tyler.eastridge@acemq.com';
 
@@ -22,6 +33,12 @@ async function sendEmailAlert(message: string, details?: Record<string, unknown>
     ? `${message}\n\n${JSON.stringify(details, null, 2)}`
     : message;
 
+  const fromName = type === 'success'
+    ? 'RabbitMQ Jira Response Success Alert'
+    : 'RabbitMQ Jira Response Failure Alert';
+
+  const subjectPrefix = type === 'success' ? '✅ [AceMQ]' : '🚨 [AceMQ]';
+
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -30,9 +47,9 @@ async function sendEmailAlert(message: string, details?: Record<string, unknown>
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'RabbitMQ Jira Response Failure Alert <alert@alerts.acemq.com>',
+        from: `${fromName} <alert@alerts.acemq.com>`,
         to,
-        subject: `[AceMQ] Support AI Alert: ${message.slice(0, 80)}`,
+        subject: `${subjectPrefix} ${message.slice(0, 80)}`,
         text: body,
       }),
     });
@@ -40,7 +57,7 @@ async function sendEmailAlert(message: string, details?: Record<string, unknown>
     if (!res.ok) {
       console.error('[alerting] Resend email failed:', res.status, await res.text());
     } else {
-      console.log(`[alerting] Email alert sent to ${to}`);
+      console.log(`[alerting] ${type} email alert sent to ${to}`);
     }
   } catch (err) {
     console.error('[alerting] Failed to send email alert:', err);
