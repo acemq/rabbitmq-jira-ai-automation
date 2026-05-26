@@ -24,15 +24,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Atomically claim the next ready job
-  const { data: job, error: claimError } = await supabase.rpc(
+  // The RPC returns SETOF (an array) — unwrap the first element.
+  // If claimError or the array is empty, fall back to manual claim.
+  const { data: rpcResult, error: claimError } = await supabase.rpc(
     'claim_next_ticket_job'
-  ) as { data: TicketJob | null; error: unknown };
+  );
+  const rpcJob: TicketJob | null = Array.isArray(rpcResult)
+    ? (rpcResult[0] ?? null)
+    : (rpcResult ?? null);
 
-  // Fallback if RPC not available: manual claim
-  let ticketJob: TicketJob | null = job;
-  if (claimError) {
-    const claimed = await claimNextJob();
-    ticketJob = claimed;
+  let ticketJob: TicketJob | null = rpcJob;
+  if (claimError || !rpcJob) {
+    // RPC errored or returned no rows — fall back to manual claim
+    ticketJob = await claimNextJob();
   }
 
   if (!ticketJob) {
